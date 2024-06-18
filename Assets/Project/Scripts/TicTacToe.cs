@@ -1,12 +1,11 @@
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
-[SerializeField]
 public enum TicTacToeState
 {
+    Initial,
     Idle,
     Active,
     Finished
@@ -17,7 +16,7 @@ public class TicTacToe : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private float finishedToIdleTransitionTime = 3;
     [Header("Game State")]
-    [SerializeField] private TicTacToeState gameState = TicTacToeState.Idle; // since the game states/game itself are super simple i'm just going to use enums instead of a proper state pattern
+    [SerializeField] private TicTacToeState gameState = TicTacToeState.Initial; // since the game states/game itself are super simple i'm just going to use enums instead of a proper state pattern
     [SerializeField] private int currentTurn = 1;
     [SerializeField] private int firstTurn = 1;
     [SerializeField] private float elapsedGameTime = 0;
@@ -32,11 +31,12 @@ public class TicTacToe : MonoBehaviour
     [SerializeField] private TextMeshProUGUI remainingTimeText = null;
     [SerializeField] private TextMeshProUGUI turnText = null;
     [SerializeField] private TextMeshProUGUI[] boardUI = new TextMeshProUGUI[9]; // using a 1D array here because i can serialize it to easily drag my references
-    [SerializeField] private TextMeshProUGUI[] boardWinningBarUI = new TextMeshProUGUI[8]; // using a 1D array here because i can serialize it to easily drag my references
+    [SerializeField] private Image[] boardWinningBarUI = new Image[8]; // using a 1D array here because i can serialize it to easily drag my references
 
     void Start()
     {
         remainingTime = maxTimePerTurn;
+        TransitionState(TicTacToeState.Idle);
     }
 
     void Update()
@@ -86,6 +86,14 @@ public class TicTacToe : MonoBehaviour
         UpdateBoardUI();
     }
 
+    public void ResetBars()
+    {
+        for (int i = 0; i < boardWinningBarUI.Length; i++)
+        {
+            TweenImageFill(boardWinningBarUI[i], boardWinningBarUI[i].fillAmount, 0, .25f);
+        }
+    }
+
     public void UpdateBoardUI()
     {
         for (int x = 0; x < 3; x++)
@@ -96,21 +104,26 @@ public class TicTacToe : MonoBehaviour
                 if (boardData[x, y] == 1)
                 {
                     boardUI[index].text = "X"; // set to "X" if player 1
+                    TweenTextAlpha(boardUI[index], boardUI[index].alpha, 1f, .1f);
                 }
                 else if (boardData[x, y] == 2)
                 {
                     boardUI[index].text = "O"; // set to "O" if player 2
+                    TweenTextAlpha(boardUI[index], boardUI[index].alpha, 1f, .1f);
                 }
                 else
                 {
-                    boardUI[index].text = ""; // clear the text if the cell is empty
+                    //boardUI[index].text = ""; // clear the text if the cell is empty
+                    TweenTextAlpha(boardUI[index], boardUI[index].alpha, 0f, .25f);
                 }
+                //TweenTextAlpha(boardUI[index].text, boardUI[index].alpha)
             }
         }
     }
     public void CheckForCompletion()
     {
         int winner = 0;
+        int barIndex = -1; // this will keep track of which bar to activate. i don't love this approach but it's pretty fast
 
         // check rows for a win
         for (int x = 0; x < 3; x++)
@@ -118,6 +131,7 @@ public class TicTacToe : MonoBehaviour
             if (boardData[x, 0] == boardData[x, 1] && boardData[x, 1] == boardData[x, 2] && boardData[x, 0] != 0)
             {
                 winner = boardData[x, 0];
+                barIndex = x; // 0, 1, 2 correspond to Horizontal 1, 2, 3
                 break;
             }
         }
@@ -130,6 +144,7 @@ public class TicTacToe : MonoBehaviour
                 if (boardData[0, y] == boardData[1, y] && boardData[1, y] == boardData[2, y] && boardData[0, y] != 0)
                 {
                     winner = boardData[0, y];
+                    barIndex = 3 + y; // 3, 4, 5 correspond to Vertical 1, 2, 3
                     break;
                 }
             }
@@ -141,16 +156,21 @@ public class TicTacToe : MonoBehaviour
             if (boardData[0, 0] == boardData[1, 1] && boardData[1, 1] == boardData[2, 2] && boardData[0, 0] != 0)
             {
                 winner = boardData[0, 0];
+                barIndex = 6; // diagonal 1 from bottom to top
             }
             else if (boardData[0, 2] == boardData[1, 1] && boardData[1, 1] == boardData[2, 0] && boardData[0, 2] != 0)
             {
                 winner = boardData[2, 0];
+                barIndex = 7; // diagonal 2 from top to bottom
             }
         }
 
         if (winner != 0)
         {
             Debug.Log("Player " + winner + " wins!");
+            if (barIndex != -1)
+                TweenImageFill(boardWinningBarUI[barIndex], boardWinningBarUI[barIndex].fillAmount, 1, 1f);
+
             TransitionState(TicTacToeState.Finished);
         }
         else
@@ -195,42 +215,96 @@ public class TicTacToe : MonoBehaviour
     }
     public IEnumerator CoTransitionState(TicTacToeState toState)
     {
-        if (gameState == toState)
+        if (gameState == toState) //same state
             yield break;
-        else if (gameState == TicTacToeState.Idle && toState == TicTacToeState.Active)
+
+        //handle what needs to happen when we transition from a state
+        if (gameState == TicTacToeState.Idle)
         {
+            Debug.Log("transitioning from idle");
+            //animate the idle UI away
+        }
+        else if (gameState == TicTacToeState.Active)
+        {
+            Debug.Log("transitioning from active");
+            //animate the game UI away
+        }
+        else if (gameState == TicTacToeState.Finished)
+        {
+            Debug.Log("transitioning from finished");
+        }
+
+        //handle what needs to happen when we transition to a state
+        if (toState == TicTacToeState.Active)
+        {
+            Debug.Log("transitioning to idle");
+            gameState = TicTacToeState.Active;
+            currentTurn = firstTurn;
             // play title screen closed logic
             // do camera transition
             // animate UI elements
             // play some character animations
             // play countdown
-            currentTurn = firstTurn;
-            gameState = TicTacToeState.Active;
         }
-        else if (gameState == TicTacToeState.Active && toState == TicTacToeState.Finished)
+        else if (toState == TicTacToeState.Finished)
         {
+            Debug.Log("transitioning to finished");
             gameState = TicTacToeState.Finished;
             // play congratulations
             // play some character animations
             yield return new WaitForSeconds(finishedToIdleTransitionTime);
             TransitionState(TicTacToeState.Idle);
         }
-        else if (gameState == TicTacToeState.Finished && toState == TicTacToeState.Idle)
+        else if (toState == TicTacToeState.Idle)
         {
+            Debug.Log("transitioning to idle");
             gameState = TicTacToeState.Idle;
-            firstTurn = (firstTurn == 1) ? 2 : 1;
+            firstTurn = (firstTurn == 1) ? 2 : 1; // alternate the player that goes first
             ResetBoardData();
+            ResetBars();
             // fly camera back to the idle state
             // animate UI elements
             // play title screen open logic
             // swap the player who gets to start the game
         }
-        else if (gameState == TicTacToeState.Active && toState == TicTacToeState.Idle)
-        {
-            // this is a restart state
-            gameState = TicTacToeState.Idle;
-        }
-
         yield break;
     }
+
+    private void TweenImageFill(Image image, float startFill, float endFill, float time)
+    {
+        StartCoroutine(CoTweenImageFill(image, startFill, endFill, time));
+    }
+    private IEnumerator CoTweenImageFill(Image image, float startFill, float endFill, float time)
+    {
+        float elapsed = 0f;
+        image.fillAmount = startFill;
+
+        while (elapsed < time)
+        {
+            elapsed += Time.deltaTime;
+            image.fillAmount = Mathf.SmoothStep(startFill, endFill, elapsed / time);
+            yield return null;
+        }
+
+        image.fillAmount = endFill; // Ensure it sets to endFill exactly at the end
+    }
+    private void TweenTextAlpha(TextMeshProUGUI text, float startAlpha, float endAlpha, float time)
+    {
+        StartCoroutine(CoTweenTextAlpha(text, startAlpha, endAlpha, time));
+    }
+    private IEnumerator CoTweenTextAlpha(TextMeshProUGUI text, float startAlpha, float endAlpha, float time)
+    {
+        float elapsed = 0f;
+        text.alpha = startAlpha;
+
+        while (elapsed < time)
+        {
+            elapsed += Time.deltaTime;
+            text.alpha = Mathf.SmoothStep(startAlpha, endAlpha, elapsed / time);
+            yield return null;
+        }
+
+        text.alpha = endAlpha; // Ensure it sets to endFill exactly at the end
+    }
+
 }
