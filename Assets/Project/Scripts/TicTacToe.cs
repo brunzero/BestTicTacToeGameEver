@@ -10,11 +10,24 @@ public enum TicTacToeState
     Active,
     Finished
 }
+public enum GameMode
+{
+    Single,
+    Duo
+}
+public enum Difficulty
+{
+    Easy,
+    Difficult,
+    Legendary
+}
 
 public class TicTacToe : MonoBehaviour
 {
     [Header("Settings")]
     [SerializeField] private float finishedToIdleTransitionTime = 3;
+    [SerializeField] private GameMode gameMode = GameMode.Single;
+    [SerializeField] private Difficulty difficulty = Difficulty.Easy;
     [Header("Game State")]
     [SerializeField] private TicTacToeState gameState = TicTacToeState.Initial; // since the game states/game itself are super simple i'm just going to use enums instead of a proper state pattern
     [SerializeField] private int currentTurn = 1;
@@ -47,7 +60,11 @@ public class TicTacToe : MonoBehaviour
 
     public void UpdateScreenSpaceUI()
     {
-        remainingTimeText.text = "Remaining Time: " + Mathf.FloorToInt(remainingTime / 60).ToString("00") + ":" + (remainingTime % 60).ToString("00");
+        int minutes = Mathf.FloorToInt(remainingTime / 60);
+        int seconds = Mathf.FloorToInt(remainingTime % 60);
+
+        remainingTimeText.text = "Remaining Time: " + minutes.ToString("00") + ":" + seconds.ToString("00");
+
         if (currentTurn == 1)
         {
             turnText.text = player1Name;
@@ -55,7 +72,7 @@ public class TicTacToe : MonoBehaviour
         else turnText.text = player2Name;
     }
 
-    public void UpdateBoardData(int index, int player)
+    public void ClickUpdateBoardData(int index, int player)
     {
         int numRows = 3;
         int row = index / numRows;
@@ -67,6 +84,8 @@ public class TicTacToe : MonoBehaviour
             boardData[row, col] = player; // set the cell to the current player's number (1 or 2)
             UpdateBoardUI();
             CheckForCompletion();
+            NextTurn();
+            elapsedGameTime = 0;
         }
         else
         {
@@ -96,6 +115,7 @@ public class TicTacToe : MonoBehaviour
 
     public void UpdateBoardUI()
     {
+        Debug.Log("calling update board UI");
         for (int x = 0; x < 3; x++)
         {
             for (int y = 0; y < 3; y++)
@@ -104,17 +124,22 @@ public class TicTacToe : MonoBehaviour
                 if (boardData[x, y] == 1)
                 {
                     boardUI[index].text = "X"; // set to "X" if player 1
-                    TweenTextAlpha(boardUI[index], boardUI[index].alpha, 1f, .1f);
+                    if (boardUI[index].alpha < 1)
+                        TweenTextAlpha(boardUI[index], 0f, 1f, .1f);
                 }
                 else if (boardData[x, y] == 2)
                 {
                     boardUI[index].text = "O"; // set to "O" if player 2
-                    TweenTextAlpha(boardUI[index], boardUI[index].alpha, 1f, .1f);
+                    if (boardUI[index].alpha < 1)
+                        TweenTextAlpha(boardUI[index], 0f, 1f, .1f);
+
                 }
-                else
+                else if (boardData[x, y] == 0)
                 {
                     //boardUI[index].text = ""; // clear the text if the cell is empty
-                    TweenTextAlpha(boardUI[index], boardUI[index].alpha, 0f, .25f);
+                    if (boardUI[index].alpha > 0)
+                        TweenTextAlpha(boardUI[index], 1f, 0f, .25f);
+                    // boardUI[index].alpha = 0f;
                 }
                 //TweenTextAlpha(boardUI[index].text, boardUI[index].alpha)
             }
@@ -173,17 +198,82 @@ public class TicTacToe : MonoBehaviour
 
             TransitionState(TicTacToeState.Finished);
         }
-        else
-        {
-            // toggle turn if no win
+    }
+    private void NextTurn()
+    {
+        StartCoroutine(CoNextTurn());
+    }
+    private IEnumerator CoNextTurn()
+    {
+        if (gameMode == GameMode.Duo)
             currentTurn = (currentTurn == 1) ? 2 : 1;
+        else if (gameMode == GameMode.Single)
+        {
+            yield return new WaitForSeconds(1f);
+            currentTurn = (currentTurn == 1) ? 2 : 1;
+            PickRandomCell();
+            currentTurn = (currentTurn == 1) ? 2 : 1;
+            elapsedGameTime = 0;
+        }
+        yield break;
+    }
+
+    private void IdlePenaltyCheck()
+    {
+        if (remainingTime <= 0)
+        {
+            PickRandomCell();
+            NextTurn();
+            elapsedGameTime = 0;
         }
     }
 
+    private void PickRandomCell()
+    {
+        bool anyFreeCells = false;
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                if (boardData[i, j] == 0)
+                {
+                    anyFreeCells = true;
+                    break;
+                }
+            }
+            if (anyFreeCells) break;
+        }
+
+        // only proceed if there is at least one free cell
+        if (anyFreeCells)
+        {
+            while (true)
+            {
+                int x = Random.Range(0, 3);
+                int y = Random.Range(0, 3);
+
+                if (boardData[x, y] == 0) // check if the spot is available
+                {
+                    boardData[x, y] = currentTurn; // place the current player's mark
+                    UpdateBoardUI();
+                    CheckForCompletion();
+                    break;
+                }
+            }
+        }
+        else
+        {
+            Debug.Log("All cells are filled. No moves possible.");
+            TransitionState(TicTacToeState.Finished);
+        }
+    }
+
+
     public void ClickedCell(int cellIndex)
     {
-        Debug.Log("clicked Tic Tac Toe cell number " + cellIndex);
-        UpdateBoardData(cellIndex, currentTurn);
+        if (gameMode == GameMode.Single && currentTurn == 1) // if it's an AI game only let them click when it's their turn
+            ClickUpdateBoardData(cellIndex, currentTurn);
+        else ClickUpdateBoardData(cellIndex, currentTurn);
     }
 
     public void StartGame()
@@ -202,6 +292,7 @@ public class TicTacToe : MonoBehaviour
         {
             elapsedGameTime += Time.deltaTime;
             remainingTime = maxTimePerTurn - elapsedGameTime;
+            IdlePenaltyCheck();
         }
         else if (gameState == TicTacToeState.Idle)
         {
