@@ -119,7 +119,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Unpressed Button
+      name: Pressable Button 0
       rect:
         serializedVersion: 2
         x: 2
@@ -140,7 +140,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: button_other_green_1
+      name: Pressable Button 1
       rect:
         serializedVersion: 2
         x: 32
@@ -149,7 +149,7 @@ TextureImporter:
         height: 21
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 6, y: 9, z: 6, w: 5}
       outline: []
       physicsShape: []
       tessellationDetail: 0
@@ -161,7 +161,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: button_other_green_2
+      name: Pressable Button 2
       rect:
         serializedVersion: 2
         x: 62
@@ -170,7 +170,7 @@ TextureImporter:
         height: 21
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 6, y: 8, z: 6, w: 6}
       outline: []
       physicsShape: []
       tessellationDetail: 0
@@ -952,7 +952,6 @@ TextureImporter:
       button_other_green_18: -1192447996
       button_other_green_24: 1128158263
       button_other_green_21: 1279638357
-      button_other_green_2: 844903921
       button_other_green_19: -1716356010
       button_other_green_29: 463052204
       button_other_green_12: 194945860
@@ -966,7 +965,6 @@ TextureImporter:
       button_other_green_32: -1438796431
       button_other_green_8: 2024651857
       button_other_green_35: -2103607217
-      Unpressed Button: 545082683
       button_other_green_17: 791725605
       button_other_green_10: 1732403795
       button_other_green_25: 1335158083
@@ -975,10 +973,11 @@ TextureImporter:
       button_other_green_36: -608778528
       button_other_green_5: 746469809
       button_other_green_23: 1164985647
+      Pressable Button 2: 844903921
       button_other_green_26: -1456941505
-      button_other_green_1: 1447848585
       button_other_green_30: 1578757405
       button_other_green_27: 876260606
+      Pressable Button 1: 1447848585
       button_other_green_22: 1887494316
       Half Container Circular: 1528409532
       button_other_green_11: -1944702281
@@ -986,6 +985,7 @@ TextureImporter:
       button_other_green_13: -133295766
       button_other_green_31: -799433098
       Full Container Circular: -1075719737
+      Pressable Button 0: 545082683
       button_other_green_37: 923160937
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
