@@ -10,15 +10,19 @@ public enum TicTacToeState
     Active,
     Finished
 }
+
+[System.Serializable]
 public enum GameMode
 {
-    Single,
+    Solo,
     Duo
 }
+
+[System.Serializable]
 public enum Difficulty
 {
     Easy,
-    Difficult,
+    Hard,
     Legendary
 }
 
@@ -26,7 +30,7 @@ public class TicTacToe : MonoBehaviour
 {
     [Header("Settings")]
     [SerializeField] private float finishedToIdleTransitionTime = 3;
-    [SerializeField] private GameMode gameMode = GameMode.Single;
+    [SerializeField] private GameMode gameMode = GameMode.Solo;
     [SerializeField] private Difficulty difficulty = Difficulty.Easy;
     [Header("Game State")]
     [SerializeField] private TicTacToeState gameState = TicTacToeState.Initial; // since the game states/game itself are super simple i'm just going to use enums instead of a proper state pattern
@@ -232,7 +236,7 @@ public class TicTacToe : MonoBehaviour
     {
         if (gameMode == GameMode.Duo)
             currentTurn = (currentTurn == 1) ? 2 : 1;
-        else if (gameMode == GameMode.Single)
+        else if (gameMode == GameMode.Solo)
         {
             yield return new WaitForSeconds(1f);
             currentTurn = (currentTurn == 1) ? 2 : 1;
@@ -296,7 +300,7 @@ public class TicTacToe : MonoBehaviour
 
     public void ClickedCell(int cellIndex)
     {
-        if (gameMode == GameMode.Single && currentTurn == 1) // if it's an AI game only let them click when it's their turn
+        if (gameMode == GameMode.Solo && currentTurn == 1) // if it's an AI game only let them click when it's their turn
             ClickUpdateBoardData(cellIndex, currentTurn);
         else ClickUpdateBoardData(cellIndex, currentTurn);
     }
@@ -423,4 +427,13 @@ public class TicTacToe : MonoBehaviour
         text.alpha = endAlpha; // Ensure it sets to endFill exactly at the end
     }
 
+    public void ChangeGameMode(GameModeComponent mode)
+    {
+        gameMode = mode.gameMode;
+    }
+
+    public void ChangeDifficulty(DifficultyComponent diff)
+    {
+        difficulty = diff.difficulty;
+    }
 }
