@@ -63,7 +63,7 @@ public class TicTacToe : MonoBehaviour
         int minutes = Mathf.FloorToInt(remainingTime / 60);
         int seconds = Mathf.FloorToInt(remainingTime % 60);
 
-        remainingTimeText.text = "Remaining Time: " + minutes.ToString("00") + ":" + seconds.ToString("00");
+        remainingTimeText.text = minutes.ToString("0") + ":" + seconds.ToString("00");
 
         if (currentTurn == 1)
         {

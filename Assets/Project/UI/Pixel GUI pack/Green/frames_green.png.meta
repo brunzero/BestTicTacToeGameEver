@@ -3,7 +3,7 @@ guid: cb020192e1ea7db429b353a30170189c
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
-  serializedVersion: 11
+  serializedVersion: 12
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -20,11 +20,12 @@ TextureImporter:
     externalNormalMap: 0
     heightScale: 0.25
     normalMapFilter: 0
+    flipGreenChannel: 0
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
-  ignoreMasterTextureLimit: 0
+  ignoreMipmapLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -47,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 10
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -63,6 +64,8 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 1
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
@@ -100,6 +103,18 @@ TextureImporter:
     overridden: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
@@ -112,7 +127,7 @@ TextureImporter:
         width: 85
         height: 29
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 10, z: 0, w: 16}
       outline: []
       physicsShape: []
@@ -133,7 +148,7 @@ TextureImporter:
         width: 67
         height: 29
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 10, z: 0, w: 15}
       outline: []
       physicsShape: []
@@ -154,7 +169,7 @@ TextureImporter:
         width: 85
         height: 29
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 10, z: 0, w: 16}
       outline: []
       physicsShape: []
@@ -175,7 +190,7 @@ TextureImporter:
         width: 67
         height: 29
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 10, z: 0, w: 15}
       outline: []
       physicsShape: []
@@ -196,7 +211,7 @@ TextureImporter:
         width: 85
         height: 29
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 10, z: 0, w: 16}
       outline: []
       physicsShape: []
@@ -217,7 +232,7 @@ TextureImporter:
         width: 67
         height: 29
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 10, z: 0, w: 15}
       outline: []
       physicsShape: []
@@ -238,7 +253,7 @@ TextureImporter:
         width: 85
         height: 29
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 10, z: 0, w: 16}
       outline: []
       physicsShape: []
@@ -259,7 +274,7 @@ TextureImporter:
         width: 67
         height: 29
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 10, z: 0, w: 15}
       outline: []
       physicsShape: []
@@ -280,7 +295,7 @@ TextureImporter:
         width: 85
         height: 29
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 10, z: 0, w: 16}
       outline: []
       physicsShape: []
@@ -301,7 +316,7 @@ TextureImporter:
         width: 67
         height: 29
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 15, y: 10, z: 15, w: 15}
       outline: []
       physicsShape: []
@@ -314,7 +329,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: frames_green_10
+      name: Banner Container
       rect:
         serializedVersion: 2
         x: 1
@@ -322,7 +337,7 @@ TextureImporter:
         width: 85
         height: 29
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 23, y: 10, z: 23, w: 16}
       outline: []
       physicsShape: []
@@ -347,8 +362,8 @@ TextureImporter:
     nameFileIdTable:
       frames_green_9: 1021057156
       frames_green_0: -460036833
+      Banner Container: -361823362
       frames_green_5: 298719364
-      frames_green_10: -361823362
       frames_green_8: -1983816424
       frames_green_3: -2081703241
       frames_green_7: -1642026770
@@ -356,9 +371,8 @@ TextureImporter:
       frames_green_1: 1553168976
       frames_green_2: 290968700
       frames_green_4: 1558366821
-  spritePackingTag: 
+  mipmapLimitGroupName: 
   pSDRemoveMatte: 0
-  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
