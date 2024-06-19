@@ -148,7 +148,7 @@ public class TicTacToe : MonoBehaviour
     public void CheckForCompletion()
     {
         int winner = 0;
-        int barIndex = -1; // this will keep track of which bar to activate. i don't love this approach but it's pretty fast
+        int barIndex = -1;
 
         // check rows for a win
         for (int x = 0; x < 3; x++)
@@ -156,7 +156,7 @@ public class TicTacToe : MonoBehaviour
             if (boardData[x, 0] == boardData[x, 1] && boardData[x, 1] == boardData[x, 2] && boardData[x, 0] != 0)
             {
                 winner = boardData[x, 0];
-                barIndex = x; // 0, 1, 2 correspond to Horizontal 1, 2, 3
+                barIndex = x;
                 break;
             }
         }
@@ -169,7 +169,7 @@ public class TicTacToe : MonoBehaviour
                 if (boardData[0, y] == boardData[1, y] && boardData[1, y] == boardData[2, y] && boardData[0, y] != 0)
                 {
                     winner = boardData[0, y];
-                    barIndex = 3 + y; // 3, 4, 5 correspond to Vertical 1, 2, 3
+                    barIndex = 3 + y;
                     break;
                 }
             }
@@ -181,12 +181,37 @@ public class TicTacToe : MonoBehaviour
             if (boardData[0, 0] == boardData[1, 1] && boardData[1, 1] == boardData[2, 2] && boardData[0, 0] != 0)
             {
                 winner = boardData[0, 0];
-                barIndex = 6; // diagonal 1 from bottom to top
+                barIndex = 6;
             }
             else if (boardData[0, 2] == boardData[1, 1] && boardData[1, 1] == boardData[2, 0] && boardData[0, 2] != 0)
             {
                 winner = boardData[2, 0];
-                barIndex = 7; // diagonal 2 from top to bottom
+                barIndex = 7;
+            }
+        }
+
+        // check for draw if no winner found and board is full
+        if (winner == 0)
+        {
+            bool boardFull = true;
+            for (int x = 0; x < 3; x++)
+            {
+                for (int y = 0; y < 3; y++)
+                {
+                    if (boardData[x, y] == 0)
+                    {
+                        boardFull = false;
+                        break;
+                    }
+                }
+                if (!boardFull) break;
+            }
+
+            if (boardFull)
+            {
+                Debug.Log("The game is a draw.");
+                TransitionState(TicTacToeState.Finished);
+                return;
             }
         }
 
@@ -195,10 +220,10 @@ public class TicTacToe : MonoBehaviour
             Debug.Log("Player " + winner + " wins!");
             if (barIndex != -1)
                 TweenImageFill(boardWinningBarUI[barIndex], boardWinningBarUI[barIndex].fillAmount, 1, 1f);
-
             TransitionState(TicTacToeState.Finished);
         }
     }
+
     private void NextTurn()
     {
         StartCoroutine(CoNextTurn());
