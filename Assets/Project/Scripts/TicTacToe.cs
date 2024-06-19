@@ -42,6 +42,7 @@ public class TicTacToe : MonoBehaviour
     [SerializeField] private float remainingTime = 120;
     [SerializeField] private float clickCooldownTimer = 0f;
     [SerializeField] private bool canClick = true;
+    [SerializeField] private int winner = 0;
     [Header("Board State")]
     private int[,] boardData = new int[3, 3]; // 0 = empty, 1 = player 1 or x, 2 = player 2 or o
     [Header("Players")]
@@ -52,6 +53,7 @@ public class TicTacToe : MonoBehaviour
     [SerializeField] private TextMeshProUGUI turnText = null;
     [SerializeField] private TextMeshProUGUI gameModeText = null;
     [SerializeField] private TextMeshProUGUI difficultyText = null;
+    [SerializeField] private TextMeshProUGUI winnerText = null;
     [SerializeField] private TextMeshProUGUI[] boardUI = new TextMeshProUGUI[9]; // using a 1D array here because i can serialize it to easily drag my references
     [SerializeField] private Image[] boardWinningBarUI = new Image[8]; // using a 1D array here because i can serialize it to easily drag my references
     [SerializeField] private Animator cameraAnimator = null;
@@ -224,6 +226,8 @@ public class TicTacToe : MonoBehaviour
             {
                 Debug.Log("The game is a draw.");
                 TransitionState(TicTacToeState.Finished);
+                winner = 0;
+                this.winner = winner;
                 return;
             }
         }
@@ -231,6 +235,7 @@ public class TicTacToe : MonoBehaviour
         if (winner != 0)
         {
             Debug.Log("Player " + winner + " wins!");
+            this.winner = winner;
             if (barIndex != -1)
                 TweenImageFill(boardWinningBarUI[barIndex], boardWinningBarUI[barIndex].fillAmount, 1, 1f);
             TransitionState(TicTacToeState.Finished);
@@ -416,6 +421,10 @@ public class TicTacToe : MonoBehaviour
         {
             Debug.Log("transitioning to finished");
             gameState = TicTacToeState.Finished;
+            if (winner != 0)
+                winnerText.text = "Player " + winner + "\nis the winner!";
+            else
+                winnerText.text = "Cat's game!";
             yield return new WaitForSeconds(2);
             endPromptAnimator.SetInteger("State", 1);
             // play congratulations
