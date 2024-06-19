@@ -30,6 +30,8 @@ public class TicTacToe : MonoBehaviour
 {
     [Header("Settings")]
     [SerializeField] private float finishedToIdleTransitionTime = 3;
+    [SerializeField] private float clickCooldown = 1f;
+    [SerializeField] private float maxTimePerTurn = 120;
     [SerializeField] private GameMode gameMode = GameMode.Solo;
     [SerializeField] private Difficulty difficulty = Difficulty.Easy;
     [Header("Game State")]
@@ -37,8 +39,9 @@ public class TicTacToe : MonoBehaviour
     [SerializeField] private int currentTurn = 1;
     [SerializeField] private int firstTurn = 1;
     [SerializeField] private float elapsedGameTime = 0;
-    [SerializeField] private float maxTimePerTurn = 120;
     [SerializeField] private float remainingTime = 120;
+    [SerializeField] private float clickCooldownTimer = 0f;
+    [SerializeField] private bool canClick = true;
     [Header("Board State")]
     private int[,] boardData = new int[3, 3]; // 0 = empty, 1 = player 1 or x, 2 = player 2 or o
     [Header("Players")]
@@ -47,8 +50,13 @@ public class TicTacToe : MonoBehaviour
     [Header("Components")]
     [SerializeField] private TextMeshProUGUI remainingTimeText = null;
     [SerializeField] private TextMeshProUGUI turnText = null;
+    [SerializeField] private TextMeshProUGUI gameModeText = null;
+    [SerializeField] private TextMeshProUGUI difficultyText = null;
     [SerializeField] private TextMeshProUGUI[] boardUI = new TextMeshProUGUI[9]; // using a 1D array here because i can serialize it to easily drag my references
     [SerializeField] private Image[] boardWinningBarUI = new Image[8]; // using a 1D array here because i can serialize it to easily drag my references
+    [SerializeField] private Animator cameraAnimator = null;
+    [SerializeField] private Animator uiAnimator = null;
+    [SerializeField] private Animator endPromptAnimator = null;
 
     void Start()
     {
@@ -88,7 +96,8 @@ public class TicTacToe : MonoBehaviour
             boardData[row, col] = player; // set the cell to the current player's number (1 or 2)
             UpdateBoardUI();
             CheckForCompletion();
-            NextTurn();
+            if (gameState == TicTacToeState.Active)
+                NextTurn();
             elapsedGameTime = 0;
         }
         else
@@ -238,7 +247,7 @@ public class TicTacToe : MonoBehaviour
             currentTurn = (currentTurn == 1) ? 2 : 1;
         else if (gameMode == GameMode.Solo)
         {
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(.25f);
             currentTurn = (currentTurn == 1) ? 2 : 1;
             PickRandomCell();
             currentTurn = (currentTurn == 1) ? 2 : 1;
@@ -297,12 +306,36 @@ public class TicTacToe : MonoBehaviour
         }
     }
 
-
     public void ClickedCell(int cellIndex)
     {
-        if (gameMode == GameMode.Solo && currentTurn == 1) // if it's an AI game only let them click when it's their turn
-            ClickUpdateBoardData(cellIndex, currentTurn);
-        else ClickUpdateBoardData(cellIndex, currentTurn);
+        if (!canClick)
+            return;
+
+        if (gameState == TicTacToeState.Active)
+        {
+            if (gameMode == GameMode.Solo && currentTurn == 1) // if it's an AI game only let them click when it's their turn
+                ClickUpdateBoardData(cellIndex, currentTurn);
+            else ClickUpdateBoardData(cellIndex, currentTurn);
+
+            StartClickCooldown();
+        }
+    }
+
+    private void StartClickCooldown()
+    {
+        StartCoroutine(CoStartClickCooldown());
+    }
+
+    private IEnumerator CoStartClickCooldown()
+    {
+        clickCooldownTimer = 0;
+        while (clickCooldownTimer < clickCooldown)
+        {
+            canClick = false;
+            clickCooldownTimer += Time.deltaTime;
+            yield return new WaitForEndOfFrame();
+        }
+        canClick = true;
     }
 
     public void StartGame()
@@ -313,6 +346,11 @@ public class TicTacToe : MonoBehaviour
     public void EndGame()
     {
         TransitionState(TicTacToeState.Finished);
+    }
+
+    public void BackToTitle()
+    {
+        TransitionState(TicTacToeState.Idle);
     }
 
     public void TickState()
@@ -359,7 +397,15 @@ public class TicTacToe : MonoBehaviour
         {
             Debug.Log("transitioning to idle");
             gameState = TicTacToeState.Active;
+            endPromptAnimator.SetInteger("State", 0);
+            firstTurn = (firstTurn == 1) ? 2 : 1; // alternate the player that goes first
+            ResetBoardData();
+            ResetBars();
             currentTurn = firstTurn;
+            gameModeText.text = gameMode.ToString();
+            difficultyText.text = difficulty.ToString();
+            cameraAnimator.SetInteger("State", 1);
+            uiAnimator.SetInteger("State", 1);
             // play title screen closed logic
             // do camera transition
             // animate UI elements
@@ -370,18 +416,21 @@ public class TicTacToe : MonoBehaviour
         {
             Debug.Log("transitioning to finished");
             gameState = TicTacToeState.Finished;
+            yield return new WaitForSeconds(2);
+            endPromptAnimator.SetInteger("State", 1);
             // play congratulations
             // play some character animations
-            yield return new WaitForSeconds(finishedToIdleTransitionTime);
-            TransitionState(TicTacToeState.Idle);
         }
         else if (toState == TicTacToeState.Idle)
         {
             Debug.Log("transitioning to idle");
             gameState = TicTacToeState.Idle;
-            firstTurn = (firstTurn == 1) ? 2 : 1; // alternate the player that goes first
+            // firstTurn = (firstTurn == 1) ? 2 : 1; // alternate the player that goes first
             ResetBoardData();
             ResetBars();
+            cameraAnimator.SetInteger("State", 0);
+            uiAnimator.SetInteger("State", 0);
+            endPromptAnimator.SetInteger("State", 0);
             // fly camera back to the idle state
             // animate UI elements
             // play title screen open logic
