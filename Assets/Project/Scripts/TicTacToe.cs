@@ -29,7 +29,6 @@ public enum Difficulty
 public class TicTacToe : MonoBehaviour
 {
     [Header("Settings")]
-    [SerializeField] private float finishedToIdleTransitionTime = 3;
     [SerializeField] private float clickCooldown = 1f;
     [SerializeField] private float maxTimePerTurn = 120;
     [SerializeField] private GameMode gameMode = GameMode.Solo;
@@ -72,7 +71,6 @@ public class TicTacToe : MonoBehaviour
         UpdateScreenSpaceUI();
     }
 
-    /******************************BOARD UI LOGIC*****************************/
     public void UpdateScreenSpaceUI()
     {
         int minutes = Mathf.FloorToInt(remainingTime / 60);
@@ -86,6 +84,49 @@ public class TicTacToe : MonoBehaviour
         }
         else turnText.text = player2Name;
     }
+
+    public void ClickUpdateBoardData(int index, int player)
+    {
+        int numRows = 3;
+        int row = index / numRows;
+        int col = index % numRows;
+
+        // if the spot they clicked is empty
+        if (boardData[row, col] == 0)
+        {
+            boardData[row, col] = player; // set the cell to the current player's number (1 or 2)
+            UpdateBoardUI();
+            CheckForCompletion();
+            if (gameState == TicTacToeState.Active)
+                NextTurn();
+            elapsedGameTime = 0;
+        }
+        else
+        {
+            Debug.LogWarning("cell is already occupied."); // log error or handle the situation when the cell is not empty
+        }
+    }
+
+    public void ResetBoardData()
+    {
+        for (int x = 0; x < 3; x++)
+        {
+            for (int y = 0; y < 3; y++)
+            {
+                boardData[x, y] = 0;
+            }
+        }
+        UpdateBoardUI();
+    }
+
+    public void ResetBars()
+    {
+        for (int i = 0; i < boardWinningBarUI.Length; i++)
+        {
+            TweenImageFill(boardWinningBarUI[i], boardWinningBarUI[i].fillAmount, 0, .25f);
+        }
+    }
+
     public void UpdateBoardUI()
     {
         Debug.Log("calling update board UI");
@@ -109,40 +150,13 @@ public class TicTacToe : MonoBehaviour
                 }
                 else if (boardData[x, y] == 0)
                 {
+                    //boardUI[index].text = ""; // clear the text if the cell is empty
                     if (boardUI[index].alpha > 0)
                         TweenTextAlpha(boardUI[index], 1f, 0f, .25f);
+                    // boardUI[index].alpha = 0f;
                 }
+                //TweenTextAlpha(boardUI[index].text, boardUI[index].alpha)
             }
-        }
-    }
-    public void ResetBars()
-    {
-        for (int i = 0; i < boardWinningBarUI.Length; i++)
-        {
-            TweenImageFill(boardWinningBarUI[i], boardWinningBarUI[i].fillAmount, 0, .25f);
-        }
-    }
-
-    /******************************GAME LOGIC*****************************/
-    public void ClickUpdateBoardData(int index, int player)
-    {
-        int numRows = 3;
-        int row = index / numRows;
-        int col = index % numRows;
-
-        // if the spot they clicked is empty
-        if (boardData[row, col] == 0)
-        {
-            boardData[row, col] = player; // set the cell to the current player's number (1 or 2)
-            UpdateBoardUI();
-            CheckForCompletion();
-            if (gameState == TicTacToeState.Active)
-                NextTurn();
-            elapsedGameTime = 0;
-        }
-        else
-        {
-            Debug.LogWarning("cell is already occupied."); // log error or handle the situation when the cell is not empty
         }
     }
     public void CheckForCompletion()
@@ -226,6 +240,7 @@ public class TicTacToe : MonoBehaviour
             TransitionState(TicTacToeState.Finished);
         }
     }
+
     private void NextTurn()
     {
         StartCoroutine(CoNextTurn());
@@ -244,6 +259,7 @@ public class TicTacToe : MonoBehaviour
         }
         yield break;
     }
+
     private void IdlePenaltyCheck()
     {
         if (remainingTime <= 0)
@@ -253,6 +269,7 @@ public class TicTacToe : MonoBehaviour
             elapsedGameTime = 0;
         }
     }
+
     private void PickRandomCell()
     {
         bool anyFreeCells = false;
@@ -292,19 +309,7 @@ public class TicTacToe : MonoBehaviour
             TransitionState(TicTacToeState.Finished);
         }
     }
-    public void ResetBoardData()
-    {
-        for (int x = 0; x < 3; x++)
-        {
-            for (int y = 0; y < 3; y++)
-            {
-                boardData[x, y] = 0;
-            }
-        }
-        UpdateBoardUI();
-    }
 
-    /******************************CALLED IN OBSERVABLES (MOSTLY BUTTONS)*****************************/
     public void ClickedCell(int cellIndex)
     {
         if (!canClick)
@@ -319,64 +324,7 @@ public class TicTacToe : MonoBehaviour
             StartClickCooldown();
         }
     }
-    public void StartGame()
-    {
-        TransitionState(TicTacToeState.Active);
-    }
-    public void EndGame()
-    {
-        TransitionState(TicTacToeState.Finished);
-    }
-    public void BackToTitle()
-    {
-        TransitionState(TicTacToeState.Idle);
-    }
-    public void ChangeGameMode(GameModeComponent mode)
-    {
-        gameMode = mode.gameMode;
-    }
-    public void ChangeDifficulty(DifficultyComponent diff)
-    {
-        difficulty = diff.difficulty;
-    }
 
-    /******************************HELPERS*****************************/
-    private void TweenImageFill(Image image, float startFill, float endFill, float time)
-    {
-        StartCoroutine(CoTweenImageFill(image, startFill, endFill, time));
-    }
-    private IEnumerator CoTweenImageFill(Image image, float startFill, float endFill, float time)
-    {
-        float elapsed = 0f;
-        image.fillAmount = startFill;
-
-        while (elapsed < time)
-        {
-            elapsed += Time.deltaTime;
-            image.fillAmount = Mathf.SmoothStep(startFill, endFill, elapsed / time);
-            yield return null;
-        }
-
-        image.fillAmount = endFill;
-    }
-    private void TweenTextAlpha(TextMeshProUGUI text, float startAlpha, float endAlpha, float time)
-    {
-        StartCoroutine(CoTweenTextAlpha(text, startAlpha, endAlpha, time));
-    }
-    private IEnumerator CoTweenTextAlpha(TextMeshProUGUI text, float startAlpha, float endAlpha, float time)
-    {
-        float elapsed = 0f;
-        text.alpha = startAlpha;
-
-        while (elapsed < time)
-        {
-            elapsed += Time.deltaTime;
-            text.alpha = Mathf.SmoothStep(startAlpha, endAlpha, elapsed / time);
-            yield return null;
-        }
-
-        text.alpha = endAlpha;
-    }
     private void StartClickCooldown()
     {
         StartCoroutine(CoStartClickCooldown());
@@ -394,7 +342,21 @@ public class TicTacToe : MonoBehaviour
         canClick = true;
     }
 
-    /******************************STATE*****************************/
+    public void StartGame()
+    {
+        TransitionState(TicTacToeState.Active);
+    }
+
+    public void EndGame()
+    {
+        TransitionState(TicTacToeState.Finished);
+    }
+
+    public void BackToTitle()
+    {
+        TransitionState(TicTacToeState.Idle);
+    }
+
     public void TickState()
     {
         if (gameState == TicTacToeState.Active)
@@ -421,21 +383,23 @@ public class TicTacToe : MonoBehaviour
         //handle what needs to happen when we transition from a state
         if (gameState == TicTacToeState.Idle)
         {
-            Debug.Log("Transitioning from Idle");
+            Debug.Log("transitioning from idle");
+            //animate the idle UI away
         }
         else if (gameState == TicTacToeState.Active)
         {
-            Debug.Log("Transitioning from Active");
+            Debug.Log("transitioning from active");
+            //animate the game UI away
         }
         else if (gameState == TicTacToeState.Finished)
         {
-            Debug.Log("Transitioning from Finished");
+            Debug.Log("transitioning from finished");
         }
 
         //handle what needs to happen when we transition to a state
         if (toState == TicTacToeState.Active)
         {
-            Debug.Log("Transitioning to Active");
+            Debug.Log("transitioning to idle");
             gameState = TicTacToeState.Active;
             endPromptAnimator.SetInteger("State", 0);
             firstTurn = (firstTurn == 1) ? 2 : 1; // alternate the player that goes first
@@ -446,10 +410,15 @@ public class TicTacToe : MonoBehaviour
             difficultyText.text = difficulty.ToString();
             cameraAnimator.SetInteger("State", 1);
             uiAnimator.SetInteger("State", 1);
+            // play title screen closed logic
+            // do camera transition
+            // animate UI elements
+            // play some character animations
+            // play countdown
         }
         else if (toState == TicTacToeState.Finished)
         {
-            Debug.Log("Transitioning to Finished");
+            Debug.Log("transitioning to finished");
             gameState = TicTacToeState.Finished;
             if (winner != 0)
                 winnerText.text = "Player " + winner + "\nis the winner!";
@@ -457,17 +426,71 @@ public class TicTacToe : MonoBehaviour
                 winnerText.text = "Cat's game!";
             yield return new WaitForSeconds(2);
             endPromptAnimator.SetInteger("State", 1);
+            // play congratulations
+            // play some character animations
         }
         else if (toState == TicTacToeState.Idle)
         {
-            Debug.Log("Transitioning to Idle");
+            Debug.Log("transitioning to idle");
             gameState = TicTacToeState.Idle;
+            // firstTurn = (firstTurn == 1) ? 2 : 1; // alternate the player that goes first
             ResetBoardData();
             ResetBars();
             cameraAnimator.SetInteger("State", 0);
             uiAnimator.SetInteger("State", 0);
             endPromptAnimator.SetInteger("State", 0);
+            // fly camera back to the idle state
+            // animate UI elements
+            // play title screen open logic
+            // swap the player who gets to start the game
         }
         yield break;
+    }
+
+    private void TweenImageFill(Image image, float startFill, float endFill, float time)
+    {
+        StartCoroutine(CoTweenImageFill(image, startFill, endFill, time));
+    }
+    private IEnumerator CoTweenImageFill(Image image, float startFill, float endFill, float time)
+    {
+        float elapsed = 0f;
+        image.fillAmount = startFill;
+
+        while (elapsed < time)
+        {
+            elapsed += Time.deltaTime;
+            image.fillAmount = Mathf.SmoothStep(startFill, endFill, elapsed / time);
+            yield return null;
+        }
+
+        image.fillAmount = endFill; // Ensure it sets to endFill exactly at the end
+    }
+    private void TweenTextAlpha(TextMeshProUGUI text, float startAlpha, float endAlpha, float time)
+    {
+        StartCoroutine(CoTweenTextAlpha(text, startAlpha, endAlpha, time));
+    }
+    private IEnumerator CoTweenTextAlpha(TextMeshProUGUI text, float startAlpha, float endAlpha, float time)
+    {
+        float elapsed = 0f;
+        text.alpha = startAlpha;
+
+        while (elapsed < time)
+        {
+            elapsed += Time.deltaTime;
+            text.alpha = Mathf.SmoothStep(startAlpha, endAlpha, elapsed / time);
+            yield return null;
+        }
+
+        text.alpha = endAlpha; // Ensure it sets to endFill exactly at the end
+    }
+
+    public void ChangeGameMode(GameModeComponent mode)
+    {
+        gameMode = mode.gameMode;
+    }
+
+    public void ChangeDifficulty(DifficultyComponent diff)
+    {
+        difficulty = diff.difficulty;
     }
 }
